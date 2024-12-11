@@ -114,72 +114,6 @@ int extrai_minimo(MinHeap *heap) {
 }
 
 
-void decrementa_indice(MinHeap *heap, int vertice, int novo_indice) {
-    int i;
-    for (i = 0; i < heap->tamanho_heap; ++i) {
-        if (heap->vertices[i] == vertice)
-            break;
-    }
-
-    heap->indices[i] = novo_indice;
-
-    while (i > 0 && heap->indices[i] < heap->indices[(i - 1) / 2]) {
-        int aux = heap->vertices[i];
-        heap->vertices[i] = heap->vertices[(i - 1) / 2];
-        heap->vertices[(i - 1) / 2] = aux;
-
-        int aux_indice = heap->indices[i];
-        heap->indices[i] = heap->indices[(i - 1) / 2];
-        heap->indices[(i - 1) / 2] = aux_indice;
-
-        i = (i - 1) / 2;
-    }
-}
-
-int *prim(FriendFace friend_f, int origem) {
-    int i, j;
-    int *parent = (int *)malloc(sizeof(int) * friend_f.num_usuarios);
-    MinHeap *minHeap = (MinHeap *)malloc(sizeof(MinHeap));
-
-    int num_usuarios = friend_f.num_usuarios;
-
-    minHeap->vertices = (int *)malloc(sizeof(int) * num_usuarios);
-    minHeap->indices = (int *)malloc(sizeof(int) * num_usuarios);
-    minHeap->tamanho_heap = num_usuarios;
-
-    for (i = 0; i < num_usuarios; ++i) {
-        minHeap->vertices[i] = i;
-        minHeap->indices[i] = INT_MAX;
-        parent[i] = -1;  
-    }
-
-    minHeap->indices[origem] = 0; 
-    
-    cria_minHeap(minHeap);
-
-    while (minHeap->tamanho_heap > 0) {
-        int u = extrai_minimo(minHeap);
-        
-        for (i = 0; i < friend_f.usuarios_sistema[u]->num_amigos; ++i) {
-            GraphAdjacencia *conexao_analisada = friend_f.usuarios_sistema[u]->conexoes_de_amigos[i];
-            int vertice_id = conexao_analisada->amigo->usuario->id;
-            int relevancia = conexao_analisada->relevancia;
-            
-            if (minHeap->indices[vertice_id] > relevancia) {
-                decrementa_indice(minHeap, vertice_id, relevancia);
-                parent[vertice_id] = u;
-            }
-        }
-    }
-
-    free(minHeap->vertices);
-    free(minHeap->indices);
-    free(minHeap);
-
-    return parent;
-}
-
-
 Conexao *conexao_init(int tamanho) {
     Conexao *conexoes = (Conexao *)malloc(sizeof(Conexao));
     conexoes->vizinhos = (int *)malloc(sizeof(int) * tamanho);
@@ -190,83 +124,6 @@ Conexao *conexao_init(int tamanho) {
         conexoes->posicao[i] = 0;
     }
     return conexoes;
-}
-
-
-int busca_conexoes(Conexao *conexoes, int indice) {
-    if (conexoes->vizinhos[indice] != indice) {
-        conexoes->vizinhos[indice] = busca_conexoes(conexoes, conexoes->vizinhos[indice]);
-    }
-    return conexoes->vizinhos[indice];
-}
-
-void faz_uniao_conexao(Conexao *conexao, int x, int y) {
-    int raizA = busca_conexoes(conexao, x);
-    int raizB = busca_conexoes(conexao, y);
-    
-    if (raizA != raizB) {
-        if (conexao->posicao[raizA] > conexao->posicao[raizB]) {
-            conexao->vizinhos[raizB] = raizA;
-        } else if (conexao->posicao[raizA] < conexao->posicao[raizB]) {
-            conexao->vizinhos[raizA] = raizB;
-        } else {
-            conexao->vizinhos[raizB] = raizA;
-            conexao->posicao[raizA]++;
-        }
-    }
-}
-int comparacao(const void *a, const void *b) {
-    Aresta *a_a = (Aresta *)a;
-    Aresta *a_b = (Aresta *)b;
-    return a_a->relevancia - a_b->relevancia;
-}
-
-int *kruskal(FriendFace friend_f, int origem) {
-    int i, *arvore_geradora;
-    int num_usuarios = friend_f.num_usuarios;
-
-    Conexao *conexao = conexao_init(num_usuarios);
-    arvore_geradora = (int *)malloc(sizeof(int) * num_usuarios);
-
-    for (i = 0; i < num_usuarios; ++i) {
-        arvore_geradora[i] = -1;  
-    }
-
-    Aresta *arestas = (Aresta *)malloc(sizeof(Aresta) * SIZE); 
-    int num_arestas = 0;
-
-    for (i = 0; i < num_usuarios; ++i) {
-        for (int j = 0; j < friend_f.usuarios_sistema[i]->num_amigos; ++j) {
-            GraphAdjacencia *conexao_analisada = friend_f.usuarios_sistema[i]->conexoes_de_amigos[j];
-            int origem = i;
-            int destino = conexao_analisada->amigo->usuario->id;
-            int relevancia = conexao_analisada->relevancia;
-
-            arestas[num_arestas].usuario_origem = friend_f.usuarios_sistema[origem];
-            arestas[num_arestas].usuario_destino = friend_f.usuarios_sistema[destino];
-            arestas[num_arestas].relevancia = relevancia;
-            num_arestas++;
-        }
-    }
-
-    qsort(arestas, num_arestas, sizeof(Aresta), comparacao);
-
-    for (i = 0; i < num_arestas; ++i) {
-        int origem = arestas[i].usuario_origem->usuario->id;
-        int destino = arestas[i].usuario_destino->usuario->id;
-
-        if (busca_conexoes(conexao, origem) != busca_conexoes(conexao, destino)) {
-            faz_uniao_conexao(conexao, origem, destino);
-            arvore_geradora[origem] = destino; 
-        }
-    }
-
-    free(arestas);
-    free(conexao->vizinhos);
-    free(conexao->posicao);
-    free(conexao);
-
-    return arvore_geradora;
 }
 
 
@@ -391,58 +248,6 @@ void calcula_grau_entrada(FriendFace friend_f, int *grau_entrada)
     }
 }
 
-int *khan(FriendFace friend_f)
-{
-    int *grau_entrada, *ordenacao, indice = 0;
-    int *fila, inicio_fila = 0, final_fila = 0;
-
-    grau_entrada = (int *)malloc(sizeof(int) * friend_f.num_usuarios);
-    ordenacao = (int *)malloc(sizeof(int) * friend_f.num_usuarios);
-    fila = (int *)malloc(sizeof(int) * friend_f.num_usuarios);
-
-    for (int i = 0; i < friend_f.num_usuarios; i++) {
-        grau_entrada[i] = 0;
-    }
-
-    for (int i = 0; i < friend_f.num_usuarios; i++) {
-        for (int j = 0; j < friend_f.usuarios_sistema[i]->num_amigos; j++) {
-            int amigo_id = friend_f.usuarios_sistema[i]->conexoes_de_amigos[j]->amigo->usuario->id;
-            grau_entrada[amigo_id]++;
-        }
-    }
-
-    for (int i = 0; i < friend_f.num_usuarios; i++) {
-        if (grau_entrada[i] == 0) {
-            fila[final_fila++] = i;
-        }
-    }
-
-    while (inicio_fila < final_fila) {
-        int atual = fila[inicio_fila++];
-        ordenacao[indice++] = atual;
-
-        for (int j = 0; j < friend_f.usuarios_sistema[atual]->num_amigos; j++) {
-            int amigo_id = friend_f.usuarios_sistema[atual]->conexoes_de_amigos[j]->amigo->usuario->id;
-            grau_entrada[amigo_id]--;
-            if (grau_entrada[amigo_id] == 0) {
-                fila[final_fila++] = amigo_id;
-            }
-        }
-    }
-
-    if (indice != friend_f.num_usuarios) {
-        printf("\"O grafo contém ciclos e não pode ser ordenado topologicamente. (khan)\"");
-        free(grau_entrada);
-        free(ordenacao);
-        free(fila);
-        return NULL;
-    }
-
-    free(grau_entrada);
-    free(fila);
-    return ordenacao;
-}
-
 
 void preenche_pilha(int indice_vertice, bool *visitado, FriendFace friend_f, int *pilha, int *topo)
 {
@@ -460,27 +265,7 @@ void preenche_pilha(int indice_vertice, bool *visitado, FriendFace friend_f, int
     pilha[(*topo)++] = indice_vertice;
 }
 
-int *dfs(FriendFace friend_f)
-{
-    bool *visitado;
-    int *pilha;
-    int topo = 0;
 
-    visitado = (bool *)malloc(sizeof(bool) * friend_f.num_usuarios);
-    pilha = (int *)malloc(sizeof(int) * friend_f.num_usuarios);
-
-    memset(visitado, 0, sizeof(bool) * friend_f.num_usuarios);
-
-    for (int i = 0; i < friend_f.num_usuarios; i++)
-    {
-        if (!visitado[i])
-        {
-            preenche_pilha(i, visitado, friend_f, pilha, &topo);
-        }
-    }
-
-    return pilha;
-}
 
 void start_graphviz()
 {
