@@ -32,8 +32,8 @@ typedef struct nodo
 
 typedef struct aresta
 {
-    Graph *usuario_origem;
-    Graph *usuario_destino;
+    Graph *pessoa_origem;
+    Graph *pessoa_destino;
     int relevancia;
 } Aresta; 
 
@@ -43,13 +43,13 @@ typedef struct
     int num_arestas;
 } ListOfAresta;
 
-typedef struct friend_face
+typedef struct s_epidemia
 {
-    Graph **usuarios_sistema;
+    Graph **pessoas;
     ListOfAresta list_arestas;
     int num_usuarios;
     float densidade;
-} FriendFace;
+} SEpidemia;
 
 
 typedef struct conexao {
@@ -145,10 +145,10 @@ GraphAdjacencia **add_espaco_livre_conexoes_amigos(Graph *usuario, GraphAdjacenc
 
             for (int j = 0; j < SIZE; ++j)
             {
-                if (arestas[j].usuario_origem == NULL)
+                if (arestas[j].pessoa_origem == NULL)
                 {
-                    arestas[j].usuario_origem = usuario;
-                    arestas[j].usuario_destino = nova_adjacencia->amigo;
+                    arestas[j].pessoa_origem = usuario;
+                    arestas[j].pessoa_destino = nova_adjacencia->amigo;
                     arestas[j].relevancia = nova_adjacencia->relevancia;
                     nova_adjacencia->posicao_aresta = &(arestas[j]);
                     return usuario->conexoes_de_amigos;
@@ -161,20 +161,20 @@ GraphAdjacencia **add_espaco_livre_conexoes_amigos(Graph *usuario, GraphAdjacenc
     return NULL;
 }
 
-FriendFace add_amizade(FriendFace friend_f, int id_usuario_solicitante, int id_usuario_adicionado, int relevancia)
+SEpidemia add_amizade(SEpidemia friend_f, int id_usuario_solicitante, int id_usuario_adicionado, int relevancia)
 {
     Graph *usuario_solicitante = NULL, *usuario_adicionado = NULL;
     int i;
     for (i = 0; i < NUM_USUARIOS_MAX; ++i)
     {
-        if (friend_f.usuarios_sistema[i]->usuario == NULL)
+        if (friend_f.pessoas[i]->usuario == NULL)
             break;
 
-        if (friend_f.usuarios_sistema[i]->usuario->id == id_usuario_solicitante)
-            usuario_solicitante = friend_f.usuarios_sistema[i];
+        if (friend_f.pessoas[i]->usuario->id == id_usuario_solicitante)
+            usuario_solicitante = friend_f.pessoas[i];
 
-        if (friend_f.usuarios_sistema[i]->usuario->id == id_usuario_adicionado)
-            usuario_adicionado = friend_f.usuarios_sistema[i];
+        if (friend_f.pessoas[i]->usuario->id == id_usuario_adicionado)
+            usuario_adicionado = friend_f.pessoas[i];
     }
 
     if ((usuario_solicitante != NULL) && (usuario_adicionado != NULL))
@@ -206,15 +206,15 @@ FriendFace add_amizade(FriendFace friend_f, int id_usuario_solicitante, int id_u
 
         friend_f.list_arestas.num_arestas++;
 
-        friend_f.list_arestas.arestas[posicao_ar].usuario_origem = usuario_solicitante;
-        friend_f.list_arestas.arestas[posicao_ar].usuario_destino = usuario_adicionado;
+        friend_f.list_arestas.arestas[posicao_ar].pessoa_origem = usuario_solicitante;
+        friend_f.list_arestas.arestas[posicao_ar].pessoa_destino = usuario_adicionado;
         friend_f.list_arestas.arestas[posicao_ar].relevancia = relevancia;
 
         nova_adjacencia->posicao_aresta = &friend_f.list_arestas.arestas[posicao_ar];
 
         usuario_solicitante->conexoes_de_amigos[usuario_solicitante->num_amigos] = nova_adjacencia;
         usuario_solicitante->num_amigos++;
-        friend_f.usuarios_sistema[id_usuario_solicitante] = usuario_solicitante;
+        friend_f.pessoas[id_usuario_solicitante] = usuario_solicitante;
     }
 
     return friend_f;
@@ -229,7 +229,7 @@ void gerar_usuarios(Usuario *usuarios, int num_usuarios)
     }
 }
 
-float calcula_densidade_grafo(FriendFace friend_f)
+float calcula_densidade_grafo(SEpidemia friend_f)
 {
     int numero_vertices = friend_f.num_usuarios;
     if (numero_vertices <= 1)
@@ -239,23 +239,23 @@ float calcula_densidade_grafo(FriendFace friend_f)
     return (float)(numero_arestas) / (numero_vertices * (numero_vertices - 1));
 }
 
-void calcula_grau_entrada(FriendFace friend_f, int *grau_entrada)
+void calcula_grau_entrada(SEpidemia friend_f, int *grau_entrada)
 {
     int i;
     for (i = 0; i < friend_f.num_usuarios; ++i)
     {
-        grau_entrada[i] = friend_f.usuarios_sistema[i]->num_amigos;
+        grau_entrada[i] = friend_f.pessoas[i]->num_amigos;
     }
 }
 
 
-void preenche_pilha(int indice_vertice, bool *visitado, FriendFace friend_f, int *pilha, int *topo)
+void preenche_pilha(int indice_vertice, bool *visitado, SEpidemia friend_f, int *pilha, int *topo)
 {
     visitado[indice_vertice] = true;
 
-    for (int i = 0; i < friend_f.usuarios_sistema[indice_vertice]->num_amigos; i++)
+    for (int i = 0; i < friend_f.pessoas[indice_vertice]->num_amigos; i++)
     {
-        int amigo_id = friend_f.usuarios_sistema[indice_vertice]->conexoes_de_amigos[i]->amigo->usuario->id;
+        int amigo_id = friend_f.pessoas[indice_vertice]->conexoes_de_amigos[i]->amigo->usuario->id;
         if (!visitado[amigo_id])
         {
             preenche_pilha(amigo_id, visitado, friend_f, pilha, topo);
@@ -272,9 +272,9 @@ void start_graphviz()
     printf("digraph G {");
 }
 
-void print_graphviz(FriendFace friend_f);
+void print_graphviz(SEpidemia friend_f);
 
-void print_graph_by_id(FriendFace friend_f, int *ids, char *nome_grafo, bool conexao);
+void print_graph_by_id(SEpidemia friend_f, int *ids, char *nome_grafo, bool conexao);
 
 void end_graphviz()
 {
@@ -283,24 +283,24 @@ void end_graphviz()
 
 int main() {
     ListOfAresta list_arestas;
-    FriendFace friend_f;
+    SEpidemia friend_f;
     Aresta *arestas = (Aresta *)malloc(sizeof(Aresta) * SIZE);
     srand(time(NULL));
 
-    friend_f.usuarios_sistema = (Graph **)malloc(sizeof(Graph *) * NUM_USUARIOS_MAX);
+    friend_f.pessoas = (Graph **)malloc(sizeof(Graph *) * NUM_USUARIOS_MAX);
 
     for (int i = 0; i < NUM_USUARIOS_MAX; i++) {
-        friend_f.usuarios_sistema[i] = (Graph *)malloc(sizeof(Graph));
-        friend_f.usuarios_sistema[i]->conexoes_de_amigos = (GraphAdjacencia **)malloc(sizeof(GraphAdjacencia *) * NUM_AMIGOS_PERMITIDOS);
+        friend_f.pessoas[i] = (Graph *)malloc(sizeof(Graph));
+        friend_f.pessoas[i]->conexoes_de_amigos = (GraphAdjacencia **)malloc(sizeof(GraphAdjacencia *) * NUM_AMIGOS_PERMITIDOS);
 
         for (int j = 0; j < NUM_AMIGOS_PERMITIDOS; ++j) {
-            friend_f.usuarios_sistema[i]->conexoes_de_amigos[j] = NULL;
+            friend_f.pessoas[i]->conexoes_de_amigos[j] = NULL;
         }
 
-        friend_f.usuarios_sistema[i]->usuario = (Usuario *)malloc(sizeof(Usuario));
-        friend_f.usuarios_sistema[i]->usuario->id = i;
-        friend_f.usuarios_sistema[i]->num_amigos = 0;
-        gerar_nome(friend_f.usuarios_sistema[i]->usuario->nome);
+        friend_f.pessoas[i]->usuario = (Usuario *)malloc(sizeof(Usuario));
+        friend_f.pessoas[i]->usuario->id = i;
+        friend_f.pessoas[i]->num_amigos = 0;
+        gerar_nome(friend_f.pessoas[i]->usuario->nome);
     }
 
     friend_f.num_usuarios = NUM_USUARIOS_MAX;
@@ -371,20 +371,20 @@ int main() {
     }
     end_graphviz();
     free(arestas);
-    free(friend_f.usuarios_sistema); 
+    free(friend_f.pessoas); 
 
     return 0;
 }
 
-void print_graphviz(FriendFace friend_f)
+void print_graphviz(SEpidemia friend_f)
 {
     int i, j, num_amigos;
     printf("subgraph cluster_0 {");
 
     for (i = 0; i < friend_f.num_usuarios; ++i)
     {
-        Graph *nodo = friend_f.usuarios_sistema[i];
-        num_amigos = friend_f.usuarios_sistema[i]->num_amigos;
+        Graph *nodo = friend_f.pessoas[i];
+        num_amigos = friend_f.pessoas[i]->num_amigos;
         for (j = 0; j < num_amigos; ++j) {
             printf("%s_%d->", nodo->usuario->nome, nodo->usuario->id);
             printf("%s_%d [label=%d];", nodo->conexoes_de_amigos[j]->amigo->usuario->nome, nodo->conexoes_de_amigos[j]->amigo->usuario->id, nodo->conexoes_de_amigos[j]->relevancia);
@@ -395,14 +395,14 @@ void print_graphviz(FriendFace friend_f)
 }
 
 
-void print_graph_by_id(FriendFace friend_f, int *ids, char *nome_grafo, bool conexao) {
+void print_graph_by_id(SEpidemia friend_f, int *ids, char *nome_grafo, bool conexao) {
     int i;
     printf("subgraph cluster_%s {", nome_grafo);
     for(i = 0; i < friend_f.num_usuarios; ++i) {
         if(ids[i] == -1) continue;
         if(conexao) 
-            printf("%s_%d_%s->", friend_f.usuarios_sistema[i]->usuario->nome, friend_f.usuarios_sistema[i]->usuario->id, nome_grafo);
-        printf("%s_%d_%s", friend_f.usuarios_sistema[ids[i]]->usuario->nome, friend_f.usuarios_sistema[ids[i]]->usuario->id, nome_grafo);
+            printf("%s_%d_%s->", friend_f.pessoas[i]->usuario->nome, friend_f.pessoas[i]->usuario->id, nome_grafo);
+        printf("%s_%d_%s", friend_f.pessoas[ids[i]]->usuario->nome, friend_f.pessoas[ids[i]]->usuario->id, nome_grafo);
         printf(";");
     }
     printf("\nlabel=\"%s\"}", nome_grafo);
