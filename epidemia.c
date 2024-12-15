@@ -73,7 +73,6 @@ Epidemia *criar_rede_livre_escala(int num_vertices, int num_arestas_iniciais) {
 
     epidemia->grafo = grafo;
     epidemia->curados = 0;
-    epidemia->doentes = 0;
     epidemia->infectados = 0;
     epidemia->mortos = 0;
     epidemia->contaminantes = 0;
@@ -119,7 +118,6 @@ Epidemia *criar_rede_aleatoria(int num_vertices, float probabilidade) {
 
     epidemia->grafo = grafo;
     epidemia->curados = 0;
-    epidemia->doentes = 0;
     epidemia->infectados = 0;
     epidemia->mortos = 0;
     epidemia->contaminantes = 0;
@@ -179,7 +177,6 @@ Epidemia *criar_pequenos_mundos(int num_vertices, int k, float probabilidade) {
 
     epidemia->grafo = grafo;
     epidemia->curados = 0;
-    epidemia->doentes = 0;
     epidemia->infectados = 0;
     epidemia->mortos = 0;
     epidemia->contaminantes = 0;
@@ -202,7 +199,7 @@ void gerar_graphviz(Graph **grafo, int num_vertices, const char *arquivo_saida) 
         {"green"},     // SAUDAVEL
         {"yellow"},    // INFECTADO
         {"orange"},    // CONTAMINANTE
-        {"red"},       // DOENTE
+        // {"red"},       // DOENTE
         {"blue"},      // CURADO
         {"black"}      // MORTO
     };
@@ -277,18 +274,6 @@ void atualizar_estados(Epidemia *epidemia, int num_vertices) {
                 }
                 break;
 
-            case DOENTE:
-                if ((float)rand() / RAND_MAX < TAXA_RECUPERACAO) {
-                    nodo->estado = CURADO;
-                    epidemia->curados += 1;
-                    epidemia->doentes -= 1;
-                } else if ((float)rand() / RAND_MAX < TAXA_MORTALIDADE) {
-                    nodo->estado = MORTO;
-                    epidemia->mortos += 1;
-                    epidemia->doentes -= 1;
-                }
-                break;
-
             default:
                 break;
         }
@@ -313,30 +298,25 @@ void propagar_infeccao(Epidemia *epidemia, int num_vertices) {
     }
 }
 
-void simular_epidemia(Epidemia *epidemia, int num_vertices, int num_iteracoes) {
+void simular_epidemia(Epidemia *epidemia, int num_vertices, int num_iteracoes, bool gerar_imagens_do_grafo) {
     Graph **grafo = epidemia->grafo;
 
     // Infecta o primeiro nó para iniciar a epidemia
     grafo[0]->estado = INFECTADO;
     epidemia->infectados = 1;
 
-    for(int i = 0; i < num_vertices; i++){
-        if(grafo[i] == NULL){
-            printf("É NULO, %d\n", i);
-        }
-    }
-
     for (int iteracao = 0; iteracao < num_iteracoes; iteracao++) {
         // Atualiza os estados e propaga a infecção
         atualizar_estados(epidemia, num_vertices);
         propagar_infeccao(epidemia, num_vertices);
-        gravar_informacoes(iteracao, num_vertices, epidemia);
+        gravar_informacoes(iteracao, num_iteracoes, num_vertices, epidemia, gerar_imagens_do_grafo);
     }
 }
 
-void gravar_informacoes(int iteracao, int num_vertices, Epidemia* epidemia)
+void gravar_informacoes(int iteracao, int num_iteracoes, int num_vertices, Epidemia* epidemia, bool gerar_imagens_do_grafo)
 {
     static char pasta_dot_simulacao[100], pasta_svg_simulacao[100], pasta_plot_simulacao[100];
+    static char pasta_graficos_simulacao[100];
 
     if(iteracao == 0){
         char* dateTimeString = getDateAndTimeString();
@@ -350,54 +330,89 @@ void gravar_informacoes(int iteracao, int num_vertices, Epidemia* epidemia)
         snprintf(pasta_svg_simulacao, 100, "output_svg/simulacao_%s", dateTimeString);
         mkdir(pasta_svg_simulacao, 0700);
 
+        snprintf(pasta_graficos_simulacao, 100, "graficos/simulacao_%s", dateTimeString);
+        mkdir(pasta_graficos_simulacao, 0700);
+
         free(dateTimeString);
     }
 
     Graph **grafo = epidemia->grafo;
 
-    char nome_arquivo_dot[200], command[400], nome_arquivo_plot[200];
+    char nome_arquivo_dot[200], command[400];
+    char nome_arquivo_plot_infectados[200];
+    char nome_arquivo_plot_contaminantes[200];
+    char nome_arquivo_plot_curados[200];
+    char nome_arquivo_plot_mortos[200];
 
     snprintf(nome_arquivo_dot, 200, "%s/simulacao_iteracao_%d.dot", pasta_dot_simulacao, iteracao);
     snprintf(command, 400, "dot %s -Tsvg > %s/%.*s.svg", nome_arquivo_dot, pasta_svg_simulacao, (int)(strlen(&nome_arquivo_dot[48]) - 4), &(nome_arquivo_dot[48]));
-    // printf("%s\n %s\n", nome_arquivo_dot, command);
-    gerar_graphviz(grafo, num_vertices, nome_arquivo_dot);
-    system(command);
+
+    if(gerar_imagens_do_grafo){
+        gerar_graphviz(grafo, num_vertices, nome_arquivo_dot);
+        system(command);
+    }
 
     // Plota as informações
-    snprintf(nome_arquivo_plot, 200, "%s/infectados.txt", pasta_plot_simulacao);
-    FILE* fp = fopen(nome_arquivo_plot, "a+");
+    snprintf(nome_arquivo_plot_infectados, 200, "%s/infectados.txt", pasta_plot_simulacao);
+    FILE* fp = fopen(nome_arquivo_plot_infectados, "a+");
     if(fp){
         fprintf(fp, "%d %d\n", iteracao, epidemia->infectados);
     }
     fclose(fp);
 
-    snprintf(nome_arquivo_plot, 200, "%s/contaminantes.txt", pasta_plot_simulacao);
-    fp = fopen(nome_arquivo_plot, "a+");
+    snprintf(nome_arquivo_plot_contaminantes, 200, "%s/contaminantes.txt", pasta_plot_simulacao);
+    fp = fopen(nome_arquivo_plot_contaminantes, "a+");
     if(fp){
         fprintf(fp, "%d %d\n", iteracao, epidemia->contaminantes);
     }
     fclose(fp);
 
-    snprintf(nome_arquivo_plot, 200, "%s/doentes.txt", pasta_plot_simulacao);
-    fp = fopen(nome_arquivo_plot, "a+");
-    if(fp){
-        fprintf(fp, "%d %d\n", iteracao, epidemia->doentes);
-    }
-    fclose(fp);
-
-    snprintf(nome_arquivo_plot, 200, "%s/curados.txt", pasta_plot_simulacao);
-    fp = fopen(nome_arquivo_plot, "a+");
+    snprintf(nome_arquivo_plot_curados, 200, "%s/curados.txt", pasta_plot_simulacao);
+    fp = fopen(nome_arquivo_plot_curados, "a+");
     if(fp){
         fprintf(fp, "%d %d\n", iteracao, epidemia->curados);
     }
     fclose(fp);
 
-    snprintf(nome_arquivo_plot, 200, "%s/mortos.txt", pasta_plot_simulacao);
-    fp = fopen(nome_arquivo_plot, "a+");
+    snprintf(nome_arquivo_plot_mortos, 200, "%s/mortos.txt", pasta_plot_simulacao);
+    fp = fopen(nome_arquivo_plot_mortos, "a+");
     if(fp){
         fprintf(fp, "%d %d\n", iteracao, epidemia->mortos);
     }
     fclose(fp);
+
+    if(iteracao == num_iteracoes - 1){
+        char nome_arquivo_gp[200], command[250];
+        snprintf(nome_arquivo_gp, 200, "%s/temp_grafico.gp", pasta_graficos_simulacao);
+        snprintf(command, 250, "gnuplot %s/temp_grafico.gp", pasta_graficos_simulacao);
+
+        fp = fopen(nome_arquivo_gp, "w");
+        fprintf(fp, "set title \"Grafico simulacao\"\nset xlabel \"Eixo X\"\nset ylabel \"Eixo Y\"\nset terminal png size 800,600\nset output \"%s/contaminantes.png\"\nplot \"%s\" using 1:2 with linespoints title \"Dados\"\n", pasta_graficos_simulacao, nome_arquivo_plot_contaminantes);
+        fclose(fp);
+
+        system(command);        
+
+        fp = fopen(nome_arquivo_gp, "w");
+        fprintf(fp, "set title \"Grafico simulacao\"\nset xlabel \"Eixo X\"\nset ylabel \"Eixo Y\"\nset terminal png size 800,600\nset output \"%s/curados.png\"\nplot \"%s\" using 1:2 with linespoints title \"Dados\"\n", pasta_graficos_simulacao, nome_arquivo_plot_curados);
+        fclose(fp);
+
+        system(command);        
+
+        fp = fopen(nome_arquivo_gp, "w");
+        fprintf(fp, "set title \"Grafico simulacao\"\nset xlabel \"Eixo X\"\nset ylabel \"Eixo Y\"\nset terminal png size 800,600\nset output \"%s/infectados.png\"\nplot \"%s\" using 1:2 with linespoints title \"Dados\"\n", pasta_graficos_simulacao, nome_arquivo_plot_infectados);
+        fclose(fp);
+
+        system(command);        
+
+        fp = fopen(nome_arquivo_gp, "w");
+        fprintf(fp, "set title \"Grafico simulacao\"\nset xlabel \"Eixo X\"\nset ylabel \"Eixo Y\"\nset terminal png size 800,600\nset output \"%s/mortos.png\"\nplot \"%s\" using 1:2 with linespoints title \"Dados\"\n", pasta_graficos_simulacao, nome_arquivo_plot_mortos);
+        fclose(fp);
+    
+        system(command);        
+
+        snprintf(command, 250, "rm %s/temp_grafico.gp", pasta_graficos_simulacao);
+        system(command);
+    }
 }
 
 char* getDateAndTimeString()
@@ -406,8 +421,8 @@ char* getDateAndTimeString()
     struct tm *dateAndTime;
     char *dateBuffer, *millisseconds;
 
-    dateBuffer = (char*)malloc(27*sizeof(char));
-    memset(dateBuffer, '\0', 27);
+    dateBuffer = (char*)malloc(26*sizeof(char));
+    memset(dateBuffer, '\0', 26);
 
     if(dateBuffer == NULL){
         printf("Erro ao alocar string de data e hora\n");
@@ -441,7 +456,7 @@ char* getDateAndTimeString()
 
     sprintf(dateBuffer+6, "%d", dateAndTime->tm_year + 1900);
 
-    dateBuffer[10] = '_'; dateBuffer[11] = -61; dateBuffer[12] = -96; 
+    dateBuffer[10] = '_'; dateBuffer[11] = '_'; dateBuffer[12] = 'a';
     dateBuffer[13] = 's'; dateBuffer[14] = '_'; 
 
     if(dateAndTime->tm_hour < 10)

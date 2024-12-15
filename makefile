@@ -5,3 +5,4 @@ delete:
 	@ rm -r output_dot/*
 	@ rm -r output_svg/*
 	@ rm -r plot/*
+	@ rm -r graficos/*
