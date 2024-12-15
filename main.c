@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <signal.h>
-#include "grafo.h"
+#include "epidemia.h"
 
 void mostrar_resultados(int num_repeticoes);
 
@@ -13,23 +13,22 @@ void mostrar_resultados(int num_repeticoes);
 
 int main() {
     srand(time(NULL));
-    int num_vertices = 20, num_repeticoes = 10;
-    int k = 2;
+    int num_vertices = 20, num_repeticoes = 100;
+    int k = 4;
     float probabilidade = REWIRE_PROBABILITY;
 
-    Graph **grafo = criar_pequenos_mundos(num_vertices, k, probabilidade);
+    Epidemia *epidemia = criar_pequenos_mundos(num_vertices, k, probabilidade);
 
-    simular_epidemia(grafo, num_vertices, num_repeticoes);
-
-    mostrar_resultados(num_repeticoes);
+    simular_epidemia(epidemia, num_vertices, num_repeticoes);
 
     // Libera a memória
     for (int i = 0; i < num_vertices; i++) {
-        free(grafo[i]->conexoes_de_amigos);
-        free(grafo[i]->usuario);
-        free(grafo[i]);
+        free(epidemia->grafo[i]->conexoes_de_amigos);
+        free(epidemia->grafo[i]->usuario);
+        free(epidemia->grafo[i]);
     }
-    free(grafo);
+    free(epidemia->grafo);
+    free(epidemia);
 
     return 0;
 }
