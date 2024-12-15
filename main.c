@@ -13,7 +13,7 @@ void mostrar_resultados(int num_repeticoes);
 
 int main() {
     srand(time(NULL));
-    int num_vertices = 20, num_repeticoes = 100;
+    int num_vertices = 20, num_repeticoes = 10;
     int k = 4;
     float probabilidade = REWIRE_PROBABILITY;
 

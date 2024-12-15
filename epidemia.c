@@ -307,7 +307,6 @@ void propagar_infeccao(Epidemia *epidemia, int num_vertices) {
                 if (vizinho->estado == SAUDAVEL && (float)rand() / RAND_MAX < TAXA_TRANSMISSAO) {
                     vizinho->estado = INFECTADO;
                     epidemia->infectados += 1;
-                    printf("teste\n");
                 }
             }
         }
