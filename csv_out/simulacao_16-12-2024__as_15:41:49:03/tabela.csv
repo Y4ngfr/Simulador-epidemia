@@ -1,0 +1,2 @@
+taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+0.30,0.75,0.01,10000,100,9142,9142,23,2793,12,182.83,555.66,308757.83

@@ -11,13 +11,15 @@ void mostrar_resultados(int num_repeticoes);
 
 int main() {
     srand(time(NULL));
-    int num_vertices = 50, num_repeticoes = 20;
+    int num_vertices = 10000, num_repeticoes = 100;
     int k = 4;
     float probabilidade = REWIRE_PROBABILITY;
 
-    Epidemia *epidemia = criar_pequenos_mundos(num_vertices, k, probabilidade);
+    // Epidemia *epidemia = criar_pequenos_mundos(num_vertices, k, probabilidade);
+    // Epidemia *epidemia = criar_rede_aleatoria(num_vertices, probabilidade);
+    Epidemia *epidemia = criar_rede_livre_escala(num_vertices, k);
 
-    simular_epidemia(epidemia, num_vertices, num_repeticoes, true);
+    simular_epidemia(epidemia, num_vertices, num_repeticoes, false);
 
     // Libera a memória
     for (int i = 0; i < num_vertices; i++) {

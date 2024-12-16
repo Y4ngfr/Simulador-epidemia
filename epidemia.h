@@ -4,10 +4,10 @@
 #define NUM_USUARIOS_MAX 6
 #define NUM_AMIGOS_PERMITIDOS NUM_USUARIOS_MAX
 #define MAX_STRING 255
-#define REWIRE_PROBABILITY 0.3  // Probabilidade de reorganizar conexões
+#define REWIRE_PROBABILITY 0.2  // Probabilidade de reorganizar conexões
 #define TAXA_TRANSMISSAO 0.5   // Probabilidade de transmitir a infecção
-#define TAXA_RECUPERACAO 0.4   // Probabilidade de se curar
-#define TAXA_MORTALIDADE 0.9   // Probabilidade de morrer
+#define TAXA_RECUPERACAO 0.5   // Probabilidade de se curar
+#define TAXA_MORTALIDADE 0.2   // Probabilidade de morrer
 #define DIAS_PARA_CONTAMINAR 2 // Dias para se tornar contaminante
 
 typedef enum {
@@ -38,10 +38,13 @@ typedef struct {
 
 typedef struct epidemia{
     Graph** grafo;
-    int infectados;
-    int contaminantes;
-    int curados;
-    int mortos;
+    int atual_infectados;
+    int atual_contaminantes;
+    int atual_curados;
+    int atual_mortos;
+
+    int total_infectados;
+    int total_contaminantes;
 } Epidemia;
 
 Epidemia *criar_rede_livre_escala(int num_vertices, int num_arestas_iniciais);
@@ -58,5 +61,6 @@ char* getDateAndTimeString();
 char* getMillisseconds();
 
 void gravar_informacoes(int iteracao, int num_interacoes, int num_vertices, Epidemia* epidemia, bool gerar_imagens_do_grafo);
+void gerar_csv(Epidemia* epidemia, char* pasta_csv_simulacao, int pico_infectados, int tempo_ate_pico, int num_iteracoes, int num_vertices, char* nome_arquivo_plot_infectados);
 
 #endif

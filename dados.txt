@@ -1,0 +1,75 @@
+Doença A (taxa de recuperacao = 0.4):
+
+    Pequenos mundos:
+        Alta Densidade (k=5, RWP=0.9):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.80,0.40,0.03,10000,100,9700,9700,407,3366,15,193.99,646.56,418035.67
+
+        Baixa Densidade (k=2, RWP=0.3):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.80,0.40,0.03,10000,100,9959,9959,422,3662,10,199.17,698.60,488046.37
+
+    Aleatória:
+        Alta Densidade (RWP=0.9):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.80,0.40,0.03,10000,100,10000,10000,442,7167,2,199.99,1071.51,1148126.23
+
+        Baixa Densidade (RWP=0.2):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.80,0.40,0.03,10000,100,10000,10000,455,8376,3,199.99,1172.84,1375552.23
+
+    Livre de Escala (k=4):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.80,0.40,0.03,10000,100,10000,10000,388,5575,8,199.99,888.00,788541.77
+
+Doença B (taxa de recuperacao = 0.75):
+    Pequenos mundos:
+        Alta Densidade (k=5, RWP=0.9):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.30,0.75,0.01,10000,100,5378,5378,20,457,37,107.55,144.53,20888.04
+
+        Baixa Densidade (k=2, RWP=0.3):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.30,0.75,0.01,10000,100,3,3,0,1,4,0.05,0.22,0.05
+
+
+    Aleatoria:
+        Alta Densidade (RWP=0.9):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.30,0.75,0.01,10000,100,10000,10000,38,7294,4,199.99,1082.03,1170793.19
+
+        Baixa Densidade (RWP=0.2):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.30,0.75,0.01,10000,100,10000,10000,37,9389,4,199.99,1315.64,1730912.39
+
+
+    Livre de Escala (k=4):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.30,0.75,0.01,10000,100,9142,9142,23,2793,12,182.83,555.66,308757.83
+
+
+
+Doença C (taxa de recuperacao = 0.5):
+    Pequenos mundos:
+        Alta Densidade (k=5, RWP=0.9):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.50,0.50,0.20,10000,100,8983,8983,1500,2117,21,179.65,473.54,224242.79
+
+        Baixa Densidade (k=2, RWP=0.3):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.50,0.50,0.20,10000,100,6,6,0,1,11,0.11,0.31,0.10
+
+
+    Aleatoria:
+        Alta Densidade (RWP=0.9):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.50,0.50,0.20,10000,100,10000,10000,1691,5558,4,199.99,986.25,972680.87
+
+        Baixa Densidade (RWP=0.2):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.50,0.50,0.20,10000,100,10000,10000,1725,8940,4,199.99,1257.50,1581305.59
+
+
+    Livre de Escala (k=4):
+        taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao
+        0.50,0.50,0.20,10000,100,9947,9947,1646,4082,9,198.93,762.12,580829.12

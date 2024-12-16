@@ -72,10 +72,13 @@ Epidemia *criar_rede_livre_escala(int num_vertices, int num_arestas_iniciais) {
     }
 
     epidemia->grafo = grafo;
-    epidemia->curados = 0;
-    epidemia->infectados = 0;
-    epidemia->mortos = 0;
-    epidemia->contaminantes = 0;
+    epidemia->atual_curados = 0;
+    epidemia->atual_infectados = 0;
+    epidemia->atual_mortos = 0;
+    epidemia->atual_contaminantes = 0;
+
+    epidemia->total_infectados = 0;
+    epidemia->total_contaminantes = 0;
 
     return epidemia;
 }
@@ -117,10 +120,15 @@ Epidemia *criar_rede_aleatoria(int num_vertices, float probabilidade) {
     }
 
     epidemia->grafo = grafo;
-    epidemia->curados = 0;
-    epidemia->infectados = 0;
-    epidemia->mortos = 0;
-    epidemia->contaminantes = 0;
+    epidemia->atual_curados = 0;
+    epidemia->atual_infectados = 0;
+    epidemia->atual_mortos = 0;
+    epidemia->atual_contaminantes = 0;
+
+    epidemia->total_infectados = 0;
+    epidemia->total_contaminantes = 0;
+
+    printf("teste criacao rede\n");
 
     return epidemia;
 }
@@ -176,10 +184,13 @@ Epidemia *criar_pequenos_mundos(int num_vertices, int k, float probabilidade) {
     }
 
     epidemia->grafo = grafo;
-    epidemia->curados = 0;
-    epidemia->infectados = 0;
-    epidemia->mortos = 0;
-    epidemia->contaminantes = 0;
+    epidemia->atual_curados = 0;
+    epidemia->atual_infectados = 0;
+    epidemia->atual_mortos = 0;
+    epidemia->atual_contaminantes = 0;
+
+    epidemia->total_infectados = 0;
+    epidemia->total_contaminantes = 0;
 
     return epidemia;
 }
@@ -257,20 +268,21 @@ void atualizar_estados(Epidemia *epidemia, int num_vertices) {
                 nodo->dias_infectado++;
                 if (nodo->dias_infectado >= DIAS_PARA_CONTAMINAR) {
                     nodo->estado = CONTAMINANTE;
-                    epidemia->contaminantes += 1;
-                    epidemia->infectados -= 1;
+                    epidemia->atual_contaminantes += 1;
+                    epidemia->atual_infectados -= 1;
+                    epidemia->total_contaminantes += 1;
                 }
                 break;
 
             case CONTAMINANTE:
                 if ((float)rand() / RAND_MAX < TAXA_RECUPERACAO) {
                     nodo->estado = CURADO;
-                    epidemia->curados += 1;
-                    epidemia->contaminantes -= 1;
+                    epidemia->atual_curados += 1;
+                    epidemia->atual_contaminantes -= 1;
                 } else if ((float)rand() / RAND_MAX < TAXA_MORTALIDADE) {
                     nodo->estado = MORTO;
-                    epidemia->mortos += 1;
-                    epidemia->contaminantes -= 1;
+                    epidemia->atual_mortos += 1;
+                    epidemia->atual_contaminantes -= 1;
                 }
                 break;
 
@@ -291,7 +303,8 @@ void propagar_infeccao(Epidemia *epidemia, int num_vertices) {
                 Graph *vizinho = nodo->conexoes_de_amigos[j];
                 if (vizinho->estado == SAUDAVEL && (float)rand() / RAND_MAX < TAXA_TRANSMISSAO) {
                     vizinho->estado = INFECTADO;
-                    epidemia->infectados += 1;
+                    epidemia->atual_infectados += 1;
+                    epidemia->total_infectados += 1;
                 }
             }
         }
@@ -303,7 +316,8 @@ void simular_epidemia(Epidemia *epidemia, int num_vertices, int num_iteracoes, b
 
     // Infecta o primeiro nó para iniciar a epidemia
     grafo[0]->estado = INFECTADO;
-    epidemia->infectados = 1;
+    epidemia->atual_infectados = 1;
+    epidemia->total_infectados = 1;
 
     for (int iteracao = 0; iteracao < num_iteracoes; iteracao++) {
         // Atualiza os estados e propaga a infecção
@@ -316,7 +330,8 @@ void simular_epidemia(Epidemia *epidemia, int num_vertices, int num_iteracoes, b
 void gravar_informacoes(int iteracao, int num_iteracoes, int num_vertices, Epidemia* epidemia, bool gerar_imagens_do_grafo)
 {
     static char pasta_dot_simulacao[100], pasta_svg_simulacao[100], pasta_plot_simulacao[100];
-    static char pasta_graficos_simulacao[100];
+    static char pasta_graficos_simulacao[100], pasta_csv_simulacao[100];
+    static int pico_infectados = 0, tempo_ate_pico;
 
     if(iteracao == 0){
         char* dateTimeString = getDateAndTimeString();
@@ -332,6 +347,9 @@ void gravar_informacoes(int iteracao, int num_iteracoes, int num_vertices, Epide
 
         snprintf(pasta_graficos_simulacao, 100, "graficos/simulacao_%s", dateTimeString);
         mkdir(pasta_graficos_simulacao, 0700);
+
+        snprintf(pasta_csv_simulacao, 100, "csv_out/simulacao_%s", dateTimeString);
+        mkdir(pasta_csv_simulacao, 0700);
 
         free(dateTimeString);
     }
@@ -356,28 +374,33 @@ void gravar_informacoes(int iteracao, int num_iteracoes, int num_vertices, Epide
     snprintf(nome_arquivo_plot_infectados, 200, "%s/infectados.txt", pasta_plot_simulacao);
     FILE* fp = fopen(nome_arquivo_plot_infectados, "a+");
     if(fp){
-        fprintf(fp, "%d %d\n", iteracao, epidemia->infectados);
+        fprintf(fp, "%d %d\n", iteracao, epidemia->atual_infectados);
     }
     fclose(fp);
+
+    if(epidemia->atual_infectados >= pico_infectados){
+        pico_infectados = epidemia->atual_infectados;
+        tempo_ate_pico = iteracao;
+    }
 
     snprintf(nome_arquivo_plot_contaminantes, 200, "%s/contaminantes.txt", pasta_plot_simulacao);
     fp = fopen(nome_arquivo_plot_contaminantes, "a+");
     if(fp){
-        fprintf(fp, "%d %d\n", iteracao, epidemia->contaminantes);
+        fprintf(fp, "%d %d\n", iteracao, epidemia->atual_contaminantes);
     }
     fclose(fp);
 
     snprintf(nome_arquivo_plot_curados, 200, "%s/curados.txt", pasta_plot_simulacao);
     fp = fopen(nome_arquivo_plot_curados, "a+");
     if(fp){
-        fprintf(fp, "%d %d\n", iteracao, epidemia->curados);
+        fprintf(fp, "%d %d\n", iteracao, epidemia->atual_curados);
     }
     fclose(fp);
 
     snprintf(nome_arquivo_plot_mortos, 200, "%s/mortos.txt", pasta_plot_simulacao);
     fp = fopen(nome_arquivo_plot_mortos, "a+");
     if(fp){
-        fprintf(fp, "%d %d\n", iteracao, epidemia->mortos);
+        fprintf(fp, "%d %d\n", iteracao, epidemia->atual_mortos);
     }
     fclose(fp);
 
@@ -412,7 +435,53 @@ void gravar_informacoes(int iteracao, int num_iteracoes, int num_vertices, Epide
 
         snprintf(command, 250, "rm %s/temp_grafico.gp", pasta_graficos_simulacao);
         system(command);
+
+
+        gerar_csv(epidemia, pasta_csv_simulacao, pico_infectados, tempo_ate_pico, num_iteracoes, num_vertices, nome_arquivo_plot_infectados);
     }
+}
+
+void gerar_csv(Epidemia* epidemia, char* pasta_csv_simulacao, int pico_infectados, int tempo_ate_pico, int num_iteracoes, int num_vertices, char* nome_arquivo_plot_infectados)
+{
+    char arquivo_csv_simulacao[200], tempBuff[50];
+    double media = 0, variancia = 0, desvio_padrao;
+    FILE* fp;
+
+    snprintf(arquivo_csv_simulacao, 200, "%s/tabela.csv", pasta_csv_simulacao);
+
+    fp = fopen(nome_arquivo_plot_infectados, "r");
+
+    while(!feof(fp)){
+        fscanf(fp, "%s", tempBuff);
+        fscanf(fp, "%s", tempBuff);
+        
+        media += (double)(atoi(tempBuff));
+    }
+    media /= (double)(num_iteracoes);
+    printf("média: %f\n", media);
+
+    fseek(fp, 0, SEEK_SET);
+
+    while(!feof(fp)){
+        fscanf(fp, "%s", tempBuff);
+        fscanf(fp, "%s", tempBuff);
+        
+        variancia += pow((double)(atoi(tempBuff)) - media, 2);
+    }
+
+    variancia /= num_iteracoes;
+    desvio_padrao = sqrt(variancia);
+
+    printf("variancia: %f, desvio padrao: %f\n", variancia, desvio_padrao);
+
+    fclose(fp);
+
+    fp = fopen(arquivo_csv_simulacao, "w");
+
+    fprintf(fp, "taxa_transmissao,taxa_recuperacao,taxa_mortalidade,num_vertices,num_repeticoes,total_infectados,total_contaminantes,total_mortos,pico_infectados,tempo_ate_pico,media_infeccao,desvio_padrao_infeccao,variancia_infeccao\n");
+    fprintf(fp, "%.2f,%.2f,%.2f,%d,%d,%d,%d,%d,%d,%d,%.2f,%.2f,%.2f\n", TAXA_TRANSMISSAO, TAXA_RECUPERACAO, TAXA_MORTALIDADE, num_vertices, num_iteracoes, epidemia->total_infectados, epidemia->total_contaminantes, epidemia->atual_mortos, pico_infectados, tempo_ate_pico, media, desvio_padrao, variancia);
+
+    fclose(fp);
 }
 
 char* getDateAndTimeString()
